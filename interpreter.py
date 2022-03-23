@@ -1,7 +1,5 @@
 INTEGER, PLUS, MINUS, MUTIPLY, DIVISION, EOF = 'INTEGER', 'PLUS', 'MINUS', 'MUTIPLY', 'DIVISION', 'EOF'
 
-# Modify the code to intepret expressions with both addition and subtraction
-
 class Token(object):
 
     def __init__(self, type, value) -> None:
@@ -27,7 +25,7 @@ class Interpreter(object):
         self.current_char = self.text[self.pos]
 
     def error(self):
-        raise Exception('Error parsing input')
+        raise Exception('Invalid syntax')
 
     def advance(self):
         self.pos += 1
@@ -68,7 +66,7 @@ class Interpreter(object):
             if self.current_char == '-':
                 self.advance()
                 return Token(MINUS, '-')
-            
+
             if self.current_char == '*':
                 self.advance()
                 return Token(MUTIPLY, '*')
@@ -82,43 +80,40 @@ class Interpreter(object):
         return Token(EOF, None)
 
     def eat(self, token_type):
-
         if (self.current_token.type == token_type):
-
             self.current_token = self.get_next_token()
         else:
-
             self.error()
+
+    def term(self):
+        token = self.current_token
+        self.eat(INTEGER)
+        return token.value
 
     def expr(self):
 
         self.current_token = self.get_next_token()
 
-        left = self.current_token
-        self.eat(INTEGER)
+        result = self.term()
 
-        op = self.current_token
+        while self.current_token.type in (PLUS, MINUS, MUTIPLY, DIVISION):
 
-        if op.type == PLUS:
-            self.eat(PLUS)
-        elif op.type == MINUS:
-            self.eat(MINUS)
-        elif op.type == MUTIPLY:
-            self.eat(MUTIPLY)
-        else:
-            self.eat(DIVISION)
+            token = self.current_token
 
-        right = self.current_token
-        self.eat(INTEGER)
+            if token.type == PLUS:
+                self.eat(PLUS)
+                result = result + self.term()
+            elif token.type == MINUS:
+                self.eat(MINUS)
+                result = result - self.term()
+            elif token.type == MUTIPLY:
+                self.eat(MUTIPLY)
+                result = result * self.term()
+            else:
+                self.eat(DIVISION)
+                result = result / self.term()
 
-        if op.type == PLUS:
-            return left.value + right.value
-        elif op.type == MINUS:
-            return left.value - right.value
-        elif op.type == MUTIPLY:
-            return left.value * right.value
-
-        return left.value / right.value
+        return result
 
 
 def main():
