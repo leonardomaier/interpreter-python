@@ -1,5 +1,6 @@
-INTEGER, PLUS, MINUS, EOF = 'INTEGER', 'PLUS', 'MINUS', 'EOF'
+INTEGER, PLUS, MINUS, MUTIPLY, DIVISION, EOF = 'INTEGER', 'PLUS', 'MINUS', 'MUTIPLY', 'DIVISION', 'EOF'
 
+# Modify the code to intepret expressions with both addition and subtraction
 
 class Token(object):
 
@@ -67,6 +68,14 @@ class Interpreter(object):
             if self.current_char == '-':
                 self.advance()
                 return Token(MINUS, '-')
+            
+            if self.current_char == '*':
+                self.advance()
+                return Token(MUTIPLY, '*')
+
+            if self.current_char == '/':
+                self.advance()
+                return Token(DIVISION, '/')
 
             self.error()
 
@@ -92,16 +101,24 @@ class Interpreter(object):
 
         if op.type == PLUS:
             self.eat(PLUS)
-        else:
+        elif op.type == MINUS:
             self.eat(MINUS)
+        elif op.type == MUTIPLY:
+            self.eat(MUTIPLY)
+        else:
+            self.eat(DIVISION)
 
         right = self.current_token
         self.eat(INTEGER)
 
-        if op.type == MINUS:
+        if op.type == PLUS:
+            return left.value + right.value
+        elif op.type == MINUS:
             return left.value - right.value
+        elif op.type == MUTIPLY:
+            return left.value * right.value
 
-        return left.value + right.value
+        return left.value / right.value
 
 
 def main():
